@@ -15,37 +15,50 @@ Password: 5RcmduHoLtCdV0Yu
 app.use(cors()); //----- to share data with client side (localhost:3000)
 app.use(express.json()); //----- to parse the string data we get from client side
 
-
 /*  Confiq with MongoDB  */
 //--------------------------------------------------------------
 const uri =
-    "mongodb+srv://mongodb1:5RcmduHoLtCdV0Yu@mycluster.rn7n6.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
-  
+  "mongodb+srv://mongodb1:5RcmduHoLtCdV0Yu@mycluster.rn7n6.mongodb.net/myFirstDatabase?retryWrites=true&w=majority";
+
 const client = new MongoClient(uri, {
   useNewUrlParser: true,
   useUnifiedTopology: true,
   serverApi: ServerApiVersion.v1,
 });
 async function run() {
-    try {
-        await client.connect()
+  try {
+    await client.connect();
 
-        // *** Write the following code from "connect to my Cluster" doc - in created user[signed in account] *** \\
-        const userColletion = client.db('myExpress').collection('user')
+    // *** Write the following code from "connect to my Cluster" doc - in created user[signed in account] *** \\
+    const userColletion = client.db("myExpress").collection("user");
 
-        // Create a data
+    app.get('/user', async (req, res) => {
+      const query = {}
+      const cursor = userColletion.find(query)
+      const users = await cursor.toArray()
+      res.send(users)
+    })
+
+    app.post("/user", async (req, res) => {
+      const newUser = req?.body;
+      console.log("Data from client side is found :o");
+      const result = await userColletion.insertOne(newUser);
+      console.log(newUser);
+      res.send(result);
+    });
+
+    /*  // Create a data
         const user = {name: 'Riyad Hossain', email: 'riyad@gmail.com'}
 
         // Insert in MongoDB
         const result = await userColletion.insertOne(user)
 
-        console.log(`A user was inserted with the _id: ${result.insertedId}`);
-    }
-    finally {
-        // await client.close() --- closed it to let active the server
-    }
+        console.log(`A user was inserted with the _id: ${result.insertedId}`); */
+  } finally {
+    // await client.close() --- closed it to let active the server
+  }
 }
-run().catch(console.dir)
+run().catch(console.dir);
 //--------------------------------------------------------------
 
 app.get("/", (req, res) => {
