@@ -1,5 +1,6 @@
 const express = require("express");
 const cors = require("cors");
+const ObjectId = require("mongodb").ObjectId;
 const { MongoClient, ServerApiVersion } = require("mongodb");
 const app = express();
 const port = process.env.PORT || 5000;
@@ -32,37 +33,41 @@ async function run() {
     // *** Write the following code from "connect to my Cluster" doc - in created user[signed in account] *** \\
     const userColletion = client.db("myExpress").collection("user");
 
-    app.get('/user', async (req, res) => {
-      const query = {}
-      const cursor = userColletion.find(query)
-      const users = await cursor.toArray()
-      res.send(users)
-    })
+    app.get("/user", async (req, res) => {
+      const query = {};
+      const cursor = userColletion.find(query);
+      const users = await cursor.toArray();
+      res.send(users);
+    });
 
-    app.post("/user", async (req, res) => {
-      const newUser = req?.body;
-      console.log("Data from client side is found :o");
-      const result = await userColletion.insertOne(newUser);
-      console.log(newUser);
+    app.get("/user/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await userColletion.findOne(query);
       res.send(result);
     });
 
-    /*  // Create a data
-        const user = {name: 'Riyad Hossain', email: 'riyad@gmail.com'}
+    app.post("/user", async (req, res) => {
+      const newUser = req?.body;
+      const result = await userColletion.insertOne(newUser);
+      res.send(result);
+    });
 
-        // Insert in MongoDB
-        const result = await userColletion.insertOne(user)
-
-        console.log(`A user was inserted with the _id: ${result.insertedId}`); */
+    app.delete("/user/:id", async (req, res) => {
+      const id = req.params.id;
+      const query = { _id: ObjectId(id) };
+      const result = await userColletion.deleteOne(query);
+      res.send(result);
+    });
   } finally {
-    // await client.close() --- closed it to let active the server
+    // await client.close() --- Do not closed it to let active the server
   }
 }
 run().catch(console.dir);
 //--------------------------------------------------------------
 
 app.get("/", (req, res) => {
-  res.send("Running My Node server successfully 😃 ");
+  res.send("Your Server is the Rock 🚀");
 });
 
 app.listen(port, () => {
